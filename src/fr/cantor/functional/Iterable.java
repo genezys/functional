@@ -9,6 +9,7 @@ import fr.cantor.functional.Functions.Injecter;
 import fr.cantor.functional.Functions.Predicate1;
 import fr.cantor.functional.Functions.Procedure1;
 import fr.cantor.functional.Nuple.Pair;
+import fr.cantor.functional.concurrent.ConcurrentIterable;
 
 /**
  * An extension to java.lang.Iterable to add functional operations like each,
@@ -456,5 +457,15 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 				};
 			}
 		};
+	}
+	
+	/**
+	 * Wraps the current Iterable in a ConcurrentIterable
+	 * to dispatch iteration on multiple threads
+	 * @return
+	 */
+	public Iterable<T> concurrently()
+	{
+		return new ConcurrentIterable<T>(this);
 	}
 }

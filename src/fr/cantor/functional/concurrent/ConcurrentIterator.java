@@ -1,6 +1,5 @@
 package fr.cantor.functional.concurrent;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -51,9 +50,9 @@ public class ConcurrentIterator<T> extends Iterator<T>
 	 */
 	public ConcurrentIterator(Iterator<T> iterator) 
 	{
-		this(iterator, 8);
+		this(iterator, 10 * getAvailableProcessors());
 	}
-	
+
 	/**
 	 * Wrap a standard iterator and specify the number of parallel computing asked 
 	 * @param iterator 
@@ -86,34 +85,34 @@ public class ConcurrentIterator<T> extends Iterator<T>
 	 * Override the implementation of inject in order to run concurrently every algorithm
 	 * based on it: any(), all(), dump(), join(), etc.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected <V> V injectWithIterator(Iterator<T> it, V value, Functions.Injecter<V,T> injecter) 
 	{
-		final ExecutorService executor = Executors.newCachedThreadPool();
-		final ArrayList<Future<V>> tasks = new ArrayList<Future<V>>();
+		final ExecutorService executor = Executors.newFixedThreadPool(getAvailableProcessors());
 		
 		// Add a batch of task to start
-		tasks.ensureCapacity(m_nBatchSize);
-		for( int i = 0; i < m_nBatchSize; ++i )
+		final Future<V>[] tasks = new Future[m_nBatchSize];
+		for( int i = 0; i < tasks.length; ++i )
 		{
-			tasks.add(submitIterationToExecutor(executor, it, value, injecter));
+			tasks[i] = submitIterationToExecutor(executor, it, value, injecter);
 		}
 		
 		while ( true )
 		{
 			// Run the tasks
 			Thread.yield();
-
+			
 			// Replaced finished tasks by new ones
-			for ( int i = 0; i < tasks.size(); i++ ) 
+			for ( int i = 0; i < tasks.length; i++ ) 
 			{
-				Future<V> future = tasks.get(i);
+				Future<V> future = tasks[i];
 				if( future != null && future.isDone() )
 				{
 					try
 					{
 						value = future.get();
-						tasks.set(i, submitIterationToExecutor(executor, it, value, injecter));
+						tasks[i] = submitIterationToExecutor(executor, it, value, injecter);
 					}
 					catch( ExecutionException e )
 					{
@@ -160,16 +159,20 @@ public class ConcurrentIterator<T> extends Iterator<T>
 		});
 	}
 	
+	private static int getAvailableProcessors()
+	{
+		return Runtime.getRuntime().availableProcessors();
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	public static void main(String[] args) 
+	public static void main(String[] args) throws InterruptedException 
 	{
 		// Iterated on all numbers from 0 to 999 and transform them to words 
 		// adding some free time to simulate a CPU yield action like a disk IO 
-		final Iterable<String> it = new Range(1000).map(new Functions.Function1<String, Integer>() 
+		final Iterable<String> it = new Range(10000).map(new Functions.Function1<String, Integer>() 
 		{
 			public String call(Integer n) throws Exception 
 			{
-				Thread.sleep(1); // just doing some fast IO disk task ? 1ms pause
 				return Integer.toString(n)
 				.replaceAll("0", " Zero ")
 				.replaceAll("1", " One ")
@@ -186,13 +189,9 @@ public class ConcurrentIterator<T> extends Iterator<T>
 			}
 		});
 		
-		// Ask for 100 parallel tasks (note that it may not be that much in reality)
-		new ConcurrentIterator<String>(it.iterator(), 100).dump(new HashSet<String>());
-		it.dump(new HashSet<String>());
-		
 		final Set<String> set1 = new HashSet<String>();
 		final Set<String> set2 = new HashSet<String>();
-		
+				
 		System.out.println("single-threaded: " + profile(new Runnable()
 		{
 			public void run()
@@ -200,17 +199,13 @@ public class ConcurrentIterator<T> extends Iterator<T>
 				it.dump(set2);
 			}
 		}));
-		System.out.println("multi-threaded: " + profile(new Runnable()
+		System.out.println("multi-threaded:  " + profile(new Runnable()
 		{
 			public void run()
 			{
 				new ConcurrentIterator<String>(it.iterator(), 100).dump(set1);
 			}
 		}));
-		
-		// On my iMac Core 2 Duo 2.8 GHz
-		// single-threaded: ~1000000 ns
-		// multi-threaded:  ~100000 ns
 	}
 	
 	private static long profile(Runnable r)
