@@ -399,9 +399,15 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	{
 		return inject(new StringBuilder(), new Injecter<StringBuilder, T>()
 		{
+			private boolean m_first = true;
+
 			public StringBuilder call(StringBuilder sb, T value) throws Exception 
 			{
-				if ( sb.length() > 0 )
+				if ( !m_first )
+				{
+					m_first = false;
+				}
+				else
 				{
 					sb.append(separator);
 				}
