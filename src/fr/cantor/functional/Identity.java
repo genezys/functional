@@ -1,6 +1,7 @@
 package fr.cantor.functional;
 
-import fr.cantor.functional.Functions.Function1;
+import fr.cantor.functional.functions.Function1;
+
 
 /**
  * A function that directly returns its parameter without modification

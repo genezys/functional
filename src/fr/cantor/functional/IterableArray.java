@@ -1,6 +1,7 @@
 package fr.cantor.functional;
 
-import fr.cantor.functional.Functions.Function1;
+import fr.cantor.functional.functions.Function1;
+
 
 public class IterableArray<T> extends Iterable<T> 
 {

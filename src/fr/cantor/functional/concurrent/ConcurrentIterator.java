@@ -10,11 +10,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import fr.cantor.functional.Functions;
+import fr.cantor.functional.Injecter;
 import fr.cantor.functional.Iterable;
 import fr.cantor.functional.Iterator;
 import fr.cantor.functional.Range;
-import fr.cantor.functional.Functions.Injecter;
+import fr.cantor.functional.functions.Function1;
 
 public class ConcurrentIterator<T> extends Iterator<T> 
 {
@@ -87,7 +87,7 @@ public class ConcurrentIterator<T> extends Iterator<T>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected <V> V injectWithIterator(Iterator<T> it, V value, Functions.Injecter<V,T> injecter) 
+	protected <V> V injectWithIterator(Iterator<T> it, V value, Injecter<V,T> injecter) 
 	{
 		final ExecutorService executor = Executors.newFixedThreadPool(getAvailableProcessors());
 		
@@ -169,7 +169,7 @@ public class ConcurrentIterator<T> extends Iterator<T>
 	{
 		// Iterated on all numbers from 0 to 999 and transform them to words 
 		// adding some free time to simulate a CPU yield action like a disk IO 
-		final Iterable<String> it = new Range(10000).map(new Functions.Function1<String, Integer>() 
+		final Iterable<String> it = new Range(10000).map(new Function1<String, Integer>() 
 		{
 			public String call(Integer n) throws Exception 
 			{

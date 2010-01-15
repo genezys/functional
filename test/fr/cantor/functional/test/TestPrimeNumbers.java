@@ -1,16 +1,17 @@
 package fr.cantor.functional.test;
 
 import junit.framework.TestCase;
-import fr.cantor.functional.Functions;
+import fr.cantor.functional.Injecter;
 import fr.cantor.functional.Iterable;
 import fr.cantor.functional.Range;
+import fr.cantor.functional.functions.predicates.Predicate1;
 
 public class TestPrimeNumbers extends TestCase 
 {
 	public void testPrimeNumbers()
 	{
 		Iterable<Integer> numbers = new Range(1, 100);
-		Iterable<Integer> primes = numbers.inject(numbers, new Functions.Injecter<Iterable<Integer>, Integer>()
+		Iterable<Integer> primes = numbers.inject(numbers, new Injecter<Iterable<Integer>, Integer>()
 		{
 			public Iterable<Integer> call(Iterable<Integer> numbers, final Integer number) throws Exception
 			{
@@ -20,7 +21,7 @@ public class TestPrimeNumbers extends TestCase
 					return numbers;
 				}
 				// Only keep in numbers those that do not divide by number
-				return numbers.reject(new Functions.Predicate1<Integer>()
+				return numbers.reject(new Predicate1<Integer>()
 				{
 					public Boolean call(Integer n) throws Exception
 					{

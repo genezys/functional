@@ -5,13 +5,13 @@ import java.util.List;
 
 import junit.framework.TestCase;
 import fr.cantor.functional.Identity;
+import fr.cantor.functional.Injecter;
 import fr.cantor.functional.Iterable;
 import fr.cantor.functional.IterableArray;
 import fr.cantor.functional.Iterator;
-import fr.cantor.functional.Functions.Function1;
-import fr.cantor.functional.Functions.Injecter;
-import fr.cantor.functional.Functions.Predicate1;
-import fr.cantor.functional.Nuple.Pair;
+import fr.cantor.functional.functions.Function1;
+import fr.cantor.functional.functions.predicates.Predicate1;
+import fr.cantor.functional.nuple.Pair;
 
 public class TestIterable extends TestCase
 {

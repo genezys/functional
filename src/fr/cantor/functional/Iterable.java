@@ -4,12 +4,11 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-import fr.cantor.functional.Functions.Function1;
-import fr.cantor.functional.Functions.Injecter;
-import fr.cantor.functional.Functions.Predicate1;
-import fr.cantor.functional.Functions.Procedure1;
-import fr.cantor.functional.Nuple.Pair;
 import fr.cantor.functional.concurrent.ConcurrentIterable;
+import fr.cantor.functional.functions.Function1;
+import fr.cantor.functional.functions.predicates.Predicate1;
+import fr.cantor.functional.functions.procedure.Procedure1;
+import fr.cantor.functional.nuple.Pair;
 
 /**
  * An extension to java.lang.Iterable to add functional operations like each,
