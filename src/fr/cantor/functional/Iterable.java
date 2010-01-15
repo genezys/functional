@@ -403,7 +403,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 
 			public StringBuilder call(StringBuilder sb, T value) throws Exception 
 			{
-				if ( !m_first )
+				if ( m_first )
 				{
 					m_first = false;
 				}
