@@ -30,10 +30,6 @@ public class Range extends Iterable<Integer>
 	{
 		m_nBegin = nStart;
 		m_nEnd = nEnd;
-		if ( m_nEnd < m_nBegin )
-		{
-			throw new IllegalArgumentException("End cannot be lower than start");
-		}
 	}
 
 	public Iterator<Integer> iterator()

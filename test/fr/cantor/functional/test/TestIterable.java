@@ -143,6 +143,33 @@ public class TestIterable extends TestCase
 		}));
 	}
 	
+	public void testFirst() throws Exception
+	{
+		assertEquals(null, array().first());
+		assertEquals("plop", array("plop", "onk").first());
+		assertEquals("plop", array("plop", "onk").select(new Predicate1<String>()
+		{
+			public Boolean call(String t1) throws Exception
+			{
+				return true;
+			}
+		}).first());
+		assertEquals(null, array("plop", "onk").select(new Predicate1<String>()
+		{
+			public Boolean call(String t1) throws Exception
+			{
+				return false;
+			}
+		}).first());
+		assertEquals("Onk", array("Plop", "Onk", "plop", "onk").select(new Predicate1<String>()
+		{
+			public Boolean call(String str) throws Exception
+			{
+				return str.substring(0, 1).toUpperCase().equals("O");
+			}
+		}).first());
+	}
+	
 	public void testMap() throws Exception
 	{
 		assertEquals(array("plop", "onk"), array("plop", "onk").map(new Identity<String>()));
