@@ -1,6 +1,6 @@
 package fr.cantor.functional.test;
 
-import fr.cantor.functional.Identity;
+import fr.cantor.functional.functions.Identity;
 import junit.framework.TestCase;
 
 public class TestIdentity extends TestCase

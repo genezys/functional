@@ -1,9 +1,9 @@
 package fr.cantor.functional.test;
 
 import junit.framework.TestCase;
-import fr.cantor.functional.Injecter;
 import fr.cantor.functional.Iterable;
 import fr.cantor.functional.Range;
+import fr.cantor.functional.functions.Injecter;
 import fr.cantor.functional.functions.predicates.Predicate1;
 
 public class TestPrimeNumbers extends TestCase 

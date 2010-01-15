@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import fr.cantor.functional.concurrent.ConcurrentIterable;
 import fr.cantor.functional.functions.Function1;
+import fr.cantor.functional.functions.Injecter;
 import fr.cantor.functional.functions.predicates.Predicate1;
 import fr.cantor.functional.functions.procedure.Procedure1;
 import fr.cantor.functional.nuple.Pair;

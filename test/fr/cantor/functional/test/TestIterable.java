@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-import fr.cantor.functional.Identity;
-import fr.cantor.functional.Injecter;
 import fr.cantor.functional.Iterable;
 import fr.cantor.functional.IterableArray;
 import fr.cantor.functional.Iterator;
 import fr.cantor.functional.functions.Function1;
+import fr.cantor.functional.functions.Identity;
+import fr.cantor.functional.functions.Injecter;
 import fr.cantor.functional.functions.predicates.Predicate1;
 import fr.cantor.functional.nuple.Pair;
 
