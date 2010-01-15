@@ -101,12 +101,13 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 */
 	public T first()
 	{
-		Iterator<T> it = iterator();
-		if ( it.hasNext() )
+		return inject(new Injecter<T, T>()
 		{
-			return it.next();
-		}
-		return null;
+			public T call(T first, T value)
+			{
+				return first;
+			}
+		});
 	}
 
 	/**
