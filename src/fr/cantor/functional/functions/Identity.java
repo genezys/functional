@@ -1,6 +1,5 @@
-package fr.cantor.functional;
+package fr.cantor.functional.functions;
 
-import fr.cantor.functional.functions.Function1;
 
 
 /**
