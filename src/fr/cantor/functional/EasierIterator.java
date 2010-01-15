@@ -11,31 +11,45 @@ import java.util.NoSuchElementException;
  */
 public abstract class EasierIterator<T> extends Iterator<T>
 {
-	protected abstract boolean moveNext();
+	protected abstract boolean moveNext() throws Exception;
 	
-	protected abstract T getCurrent();
+	protected abstract T getCurrent() throws Exception;
 	
 	public boolean hasNext()
 	{
-		advance();
-		return m_bHasNext;
+		try
+		{
+			advance();
+			return m_bHasNext;
+		}
+		catch ( Exception e )
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public T next()
 	{
-		advance();
-		m_bShouldMoveToNext = true;
-		if( !m_bHasNext )
+		try
 		{
-			throw new NoSuchElementException();
+			advance();
+			m_bShouldMoveToNext = true;
+			if( !m_bHasNext )
+			{
+				throw new NoSuchElementException();
+			}
+			return getCurrent();
 		}
-		return getCurrent();
+		catch ( Exception e )
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	private boolean m_bShouldMoveToNext = true;
 	private boolean m_bHasNext = false;
 
-	private void advance()
+	private void advance() throws Exception
 	{
 		if ( m_bShouldMoveToNext )
 		{

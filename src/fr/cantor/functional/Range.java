@@ -1,6 +1,5 @@
 package fr.cantor.functional;
 
-import java.util.NoSuchElementException;
 
 /**
  * An Iterable range of integers. 
@@ -34,25 +33,21 @@ public class Range extends Iterable<Integer>
 
 	public Iterator<Integer> iterator()
 	{
-		return new Iterator<Integer>()
+		return new EasierIterator<Integer>()
 		{
-			private Integer m_nIndex = m_nBegin;
+			private Integer m_nIndex = m_nBegin - 1;
 			
-			public boolean hasNext() 
-			{ 
-				return ( m_nIndex <= m_nEnd ); 
+			@Override
+			protected Integer getCurrent() throws Exception
+			{
+				return m_nIndex;
 			}
 			
-			public Integer next() 
-			{ 
-				synchronized( m_nIndex )
-				{
-					if ( !hasNext() )
-					{
-						throw new NoSuchElementException();
-					}
-					return m_nIndex++;
-				}
+			@Override
+			protected boolean moveNext() throws Exception
+			{
+				m_nIndex += 1;
+				return ( m_nIndex <= m_nEnd );
 			}
 		};
 	}

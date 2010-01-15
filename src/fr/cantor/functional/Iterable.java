@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import fr.cantor.functional.concurrent.ConcurrentIterable;
 import fr.cantor.functional.functions.Function1;
 import fr.cantor.functional.functions.Injecter;
+import fr.cantor.functional.functions.predicates.NotPredicate1;
 import fr.cantor.functional.functions.predicates.Predicate1;
 import fr.cantor.functional.functions.procedure.Procedure1;
 import fr.cantor.functional.nuple.Pair;
@@ -79,27 +80,177 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 		if ( obj instanceof Iterable )
 		{
 			final Iterable<Object> it = (Iterable<Object>) obj;
-			return combine(it).inject(Boolean.valueOf(true), new Injecter<Boolean, Pair<T, Object>>()
+			try
 			{
-				public Boolean call(Boolean bOtherEquals, Pair<T, Object> pair) throws Exception 
+				return combine(it).inject(Boolean.valueOf(true), new Injecter<Boolean, Pair<T, Object>>()
 				{
-					return bOtherEquals && ( ( pair.first == pair.second ) || pair.first.equals(pair.second) );
-				}
-			});
+					public Boolean call(Boolean bOtherEquals, Pair<T, Object> pair) throws Exception 
+					{
+						return bOtherEquals && ( ( pair.first == pair.second ) || pair.first.equals(pair.second) );
+					}
+				});
+			}
+			catch ( IterationException e )
+			{
+				// equals cannot throw :-(
+				throw new RuntimeException(e);
+			}
 		}
 		return false;
 	}
 	
-	@Override
-	public String toString()
+	/**
+	 * Computes a value by processing every elements in the iterator Used to
+	 * build one value from every elements in the iterator. This version takes
+	 * the initial value to inject and returns a value of the same type.
+	 * 
+	 * @param <V>
+	 *            Type of the value to inject and of the resulting value
+	 * @param value
+	 *            initial value to inject
+	 * @param injecter
+	 *            Functor that will apply the injection on each element
+	 * @return the injected value modified by the injecter called for every
+	 *         elements
+	 * @throws IterationException 
+	 */
+	public <V> V inject(V value, final Injecter<V, T> injecter) throws IterationException
 	{
-		return super.toString() + "{'" + this.join("','") + "'}";
+		return injectWithIterator(iterator(), value, injecter);
 	}
+
+	/**
+	 * Computes a value by processing every elements in the iterator This
+	 * version uses the first value of the iterator as the initial value
+	 * 
+	 * @param injecter
+	 *            injecter object to use to compute each element injection
+	 * @return injected value modified by the injecter called for every elements
+	 * @throws IterationException 
+	 * @see #inject(Object, Injecter)
+	 */
+	public T inject(final Injecter<T, T> injecter) throws IterationException
+	{
+		Iterator<T> it = iterator();
+		if ( !it.hasNext() )
+		{
+			return null;
+		}
+		return injectWithIterator(it, it.next(), injecter);
+	}
+
+	/**
+	 * Internal implementation of inject.
+	 * @param <V> Type to inject and return
+	 * @param it iterator containing the elements to inject on
+	 * @param value initial value to inject
+	 * @param injecter closure to execute the injection
+	 * @return the injected value modified from all the injection
+	 * @throws IterationException 
+	 */
+	protected <V> V injectWithIterator(Iterator<T> it, V value, final Injecter<V, T> injecter) throws IterationException
+	{
+		while ( it.hasNext() )
+		{
+			try
+			{
+				value = injecter.call(value, it.next());
+			}
+			catch ( IterationException e ) 
+			{
+				throw e;
+			}
+			catch ( Exception e )
+			{
+				throw new IterationException(e);
+			}
+		}
+		return value;
+	}
+
+	/**
+	 * Transform every elements in the iterator
+	 * 
+	 * @param <V>
+	 *            Type of the returned iterator element
+	 * @param mapper
+	 *            Functor that will transform each element of the iterator
+	 * @return an Iterator containing the transformed elements
+	 */
+	public <V> Iterable<V> map(final Function1<V, T> mapper)
+	{
+		return new Iterable<V>()
+		{
+			public Iterator<V> iterator()
+			{
+				final Iterator<T> it = Iterable.this.iterator();
+				return new Iterator<V>()
+				{
+					public boolean hasNext() { return it.hasNext(); }
 	
+					public V next()
+					{
+						T next = it.next();
+						try
+						{
+							return mapper.call(next);
+						}
+						catch ( Exception e )
+						{
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}
+		};
+	}
+
+	/**
+	 * Filter an Iterable to keep only some elements
+	 * @param predicate Predicate that returns true for elements to be kept
+	 * @return an Iterator containing the retained elements
+	 */
+	public Iterable<T> select(final Predicate1<T> predicate)
+	{
+		return new Iterable<T>()
+		{
+			public Iterator<T> iterator()
+			{
+				final Iterator<T> it = Iterable.this.iterator();
+				return new EasierIterator<T>()
+				{
+					private T m_tCurrent;
+					
+					@Override
+					protected T getCurrent()
+					{
+						return m_tCurrent;
+					}
+
+					@Override
+					protected boolean moveNext() throws Exception
+					{
+						while ( it.hasNext() )
+						{
+							T t = it.next();
+							if ( predicate.call(t) )
+							{
+								m_tCurrent = t;
+								return true;
+							}
+						}
+						return false;
+					}
+				};
+			}
+		};
+	}
+
 	/**
 	 * @return the first element of the iterator or null if it does not exists
+	 * @throws IterationException 
 	 */
-	public T first()
+	public T first() throws IterationException
 	{
 		return inject(new Injecter<T, T>()
 		{
@@ -113,8 +264,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	/**
 	 * @params predicate Predicate describing the first element to search
 	 * @return the first element of the iterator or null if it does not exists
+	 * @throws IterationException 
 	 */
-	public T first(Predicate1<T> predicate)
+	public T first(Predicate1<T> predicate) throws IterationException
 	{
 		return select(predicate).first();
 	}
@@ -145,9 +297,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param predicate
 	 *            Predicate to test each element
 	 * @return true if one element satisfies the predicate, false otherwise
-	 * @throws Exception
+	 * @throws IterationException
 	 */
-	public boolean any(final Predicate1<T> predicate) throws Exception
+	public boolean any(final Predicate1<T> predicate) throws IterationException
 	{
 		return inject(false, new Injecter<Boolean, T>() 
 		{
@@ -167,9 +319,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param predicate
 	 *            Predicate to test each element
 	 * @return true if all elements satisfy the predicate, false otherwise
-	 * @throws Exception
+	 * @throws IterationException
 	 */
-	public boolean all(final Predicate1<T> predicate) throws Exception
+	public boolean all(final Predicate1<T> predicate) throws IterationException 
 	{
 		return inject(true, new Injecter<Boolean, T>() 
 		{
@@ -186,177 +338,16 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	}
 	
 	/**
-	 * Filter an Iterable to keep only some elements
-	 * @param predicate Predicate that returns true for elements to be kept
-	 * @return an Iterator containing the retained elements
-	 */
-	public Iterable<T> select(final Predicate1<T> predicate)
-	{
-		return new Iterable<T>()
-		{
-			public Iterator<T> iterator()
-			{
-				final Iterator<T> it = Iterable.this.iterator();
-				return new Iterator<T>()
-				{
-					private T m_tNext;
-
-					public boolean hasNext()
-					{
-						// Search next valid element
-						while ( it.hasNext() )
-						{
-							T t = it.next();
-							try
-							{
-								if ( predicate.call(t) )
-								{
-									m_tNext = t;
-									return true;
-								}
-							}
-							catch ( Exception e )
-							{
-								throw new RuntimeException(e);
-							}
-						}
-						m_tNext = null;
-						return false;
-					}
-
-					public T next()
-					{
-						if ( m_tNext == null && !hasNext() )
-						{
-							throw new NoSuchElementException();
-						}
-						return m_tNext;
-					}
-				};
-			}
-		};
-	}
-	
-	/**
 	 * Rejects an Iterable to keep only some elements
 	 * @param predicate Predicate that returns true for elements to be kept
 	 * @return an Iterator containing the retained elements
 	 */
 	public Iterable<T> reject(final Predicate1<T> predicate)
 	{
-		return select(new Predicate1<T>()
-		{
-			public Boolean call(T value) throws Exception 
-			{
-				return !predicate.call(value);
-			}
-		});
+		return select(new NotPredicate1<T>(predicate));
 	}
 
 
-	/**
-	 * Computes a value by processing every elements in the iterator Used to
-	 * build one value from every elements in the iterator. This version takes
-	 * the initial value to inject and returns a value of the same type.
-	 * 
-	 * @param <V>
-	 *            Type of the value to inject and of the resulting value
-	 * @param value
-	 *            initial value to inject
-	 * @param injecter
-	 *            Functor that will apply the injection on each element
-	 * @return the injected value modified by the injecter called for every
-	 *         elements
-	 */
-	public <V> V inject(V value, final Injecter<V, T> injecter)
-	{
-		return injectWithIterator(iterator(), value, injecter);
-	}
-
-	/**
-	 * Computes a value by processing every elements in the iterator This
-	 * version uses the first value of the iterator as the initial value
-	 * 
-	 * @param injecter
-	 *            injecter object to use to compute each element injection
-	 * @return injected value modified by the injecter called for every elements
-	 * @see #inject(Object, Injecter)
-	 */
-	public T inject(final Injecter<T, T> injecter)
-	{
-		Iterator<T> it = iterator();
-		if ( !it.hasNext() )
-		{
-			return null;
-		}
-		return injectWithIterator(it, it.next(), injecter);
-	}
-	
-	/**
-	 * Internal implementation of inject.
-	 * @param <V> Type to inject and return
-	 * @param it iterator containing the elements to inject on
-	 * @param value initial value to inject
-	 * @param injecter closure to execute the injection
-	 * @return the injected value modified from all the injection
-	 */
-	protected <V> V injectWithIterator(Iterator<T> it, V value, final Injecter<V, T> injecter)
-	{
-		while ( it.hasNext() )
-		{
-			try
-			{
-				value = injecter.call(value, it.next());
-			}
-			catch ( NoSuchElementException end )
-			{
-				break;
-			}
-			catch ( Exception e )
-			{
-				throw new RuntimeException(e);
-			}
-		}
-		return value;
-	}
-
-	/**
-	 * Transform every elements in the iterator
-	 * 
-	 * @param <V>
-	 *            Type of the returned iterator element
-	 * @param mapper
-	 *            Functor that will transform each element of the iterator
-	 * @return an Iterator containing the transformed elements
-	 */
-	public <V> Iterable<V> map(final Function1<V, T> mapper)
-	{
-		return new Iterable<V>()
-		{
-			public Iterator<V> iterator()
-			{
-				final Iterator<T> it = Iterable.this.iterator();
-				return new Iterator<V>()
-				{
-					public boolean hasNext() { return it.hasNext(); }
-
-					public V next()
-					{
-						T next = it.next();
-						try
-						{
-							return mapper.call(next);
-						}
-						catch ( Exception e )
-						{
-							throw new RuntimeException(e);
-						}
-					}
-				};
-			}
-		};
-	}
-	
 	public <V> Iterable<V> map(final Method method)
 	{
 		return map(new Function1<V, T>()
@@ -374,8 +365,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * 
 	 * @param collection the collection to append elements into
 	 * @return the collection filled with all elements from the iterator
+	 * @throws IterationException 
 	 */
-	public <C extends Collection<T>> C dump(C collection)
+	public <C extends Collection<T>> C dump(C collection) throws IterationException
 	{
 		return inject(collection, new Injecter<C, T>()
 		{
@@ -394,8 +386,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param separator
 	 *            text to use to separator elements
 	 * @return the concatenated string
+	 * @throws IterationException 
 	 */
-	public String join(final String separator)
+	public String join(final String separator) throws IterationException
 	{
 		return inject(new StringBuilder(), new Injecter<StringBuilder, T>()
 		{

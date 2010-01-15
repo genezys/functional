@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import fr.cantor.functional.Iterable;
+import fr.cantor.functional.IterationException;
 import fr.cantor.functional.Iterator;
 import fr.cantor.functional.Range;
 import fr.cantor.functional.functions.Function1;
@@ -25,8 +26,9 @@ public class ConcurrentIterator<T> extends Iterator<T>
 	 * @param iterable iterable to dump
 	 * @param collection collection to dump into
 	 * @return the collection argument filled with the iterable elements
+	 * @throws IterationException 
 	 */
-	public static <T, C extends Collection<T>> C dump(Iterable<T> iterable, C collection)
+	public static <T, C extends Collection<T>> C dump(Iterable<T> iterable, C collection) throws IterationException
 	{
 		return new ConcurrentIterator<T>(iterable.iterator()).dump(collection);
 	}
@@ -38,8 +40,9 @@ public class ConcurrentIterator<T> extends Iterator<T>
 	 * @param iterable iterable to dump
 	 * @param collection collection to dump into
 	 * @return the collection argument filled with the iterable elements
+	 * @throws IterationException 
 	 */
-	public static <T, C extends Collection<T>> C dump(Iterable<T> iterable, int nBatchSize, C collection)
+	public static <T, C extends Collection<T>> C dump(Iterable<T> iterable, int nBatchSize, C collection) throws IterationException
 	{
 		return new ConcurrentIterator<T>(iterable.iterator(), nBatchSize).dump(collection);
 	}
@@ -196,14 +199,28 @@ public class ConcurrentIterator<T> extends Iterator<T>
 		{
 			public void run()
 			{
-				it.dump(set2);
+				try
+				{
+					it.dump(set2);
+				}
+				catch ( IterationException e )
+				{
+					throw new RuntimeException(e);
+				}
 			}
 		}));
 		System.out.println("multi-threaded:  " + profile(new Runnable()
 		{
 			public void run()
 			{
-				new ConcurrentIterator<String>(it.iterator(), 100).dump(set1);
+				try
+				{
+					new ConcurrentIterator<String>(it.iterator(), 100).dump(set1);
+				}
+				catch ( IterationException e )
+				{
+					throw new RuntimeException(e);
+				}
 			}
 		}));
 	}

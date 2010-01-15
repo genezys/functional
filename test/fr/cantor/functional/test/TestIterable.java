@@ -6,16 +6,19 @@ import java.util.List;
 import junit.framework.TestCase;
 import fr.cantor.functional.Iterable;
 import fr.cantor.functional.IterableArray;
+import fr.cantor.functional.IterationException;
 import fr.cantor.functional.Iterator;
-import fr.cantor.functional.functions.Function1;
 import fr.cantor.functional.functions.Identity;
 import fr.cantor.functional.functions.Injecter;
+import fr.cantor.functional.functions.method.Method0;
+import fr.cantor.functional.functions.predicates.FalsePredicate1;
 import fr.cantor.functional.functions.predicates.Predicate1;
+import fr.cantor.functional.functions.predicates.TruePredicate1;
 import fr.cantor.functional.nuple.Pair;
 
 public class TestIterable extends TestCase
 {
-	public void testCombineSameSize() throws Exception
+	public void testCombineSameSize() throws IterationException
 	{
 		final Iterable<String> strings1 = array("plop1", "onk1");
 		final Iterable<String> strings2 = array("plop2", "onk2");
@@ -34,7 +37,7 @@ public class TestIterable extends TestCase
 		
 		assertFalse(combined.hasNext());
 	}
-	public void testCombineSmaller() throws Exception
+	public void testCombineSmaller() throws IterationException
 	{
 		final Iterable<String> strings1 = array("plop1", "onk1");
 		final Iterable<String> strings2 = array("plop2");
@@ -53,7 +56,7 @@ public class TestIterable extends TestCase
 		
 		assertFalse(combined.hasNext());
 	}
-	public void testCombineLarger() throws Exception
+	public void testCombineLarger() throws IterationException
 	{
 		final Iterable<String> strings1 = array("plop1");
 		final Iterable<String> strings2 = array("plop2", "onk2");
@@ -73,12 +76,12 @@ public class TestIterable extends TestCase
 		assertFalse(combined.hasNext());
 	}
 	
-	public void testEquals() throws Exception
+	public void testEquals() throws IterationException
 	{
 		assertTrue(array("plop", "onk").equals(array("plop", "onk")));
 	}
 	
-	public void testDump() throws Exception
+	public void testDump() throws IterationException
 	{
 		List<String> astr = array("plop", "onk").dump(new ArrayList<String>());
 		assertEquals(2, astr.size());
@@ -86,12 +89,12 @@ public class TestIterable extends TestCase
 		assertEquals("onk", astr.get(1));
 	}
 	
-	public void testJoin() throws Exception
+	public void testJoin() throws IterationException
 	{
 		assertEquals("plop,onk,gloubi", array("plop", "onk", "gloubi").join(","));
 	}
 	
-	public void testInject() throws Exception
+	public void testInject() throws IterationException
 	{
 		Iterable<Integer> numbers = array(1, 2, 3, 4, 5, 6);
 		assertEquals(Integer.valueOf(21), numbers.inject(0, new Injecter<Integer, Integer>()
@@ -110,7 +113,7 @@ public class TestIterable extends TestCase
 		}));
 	}
 	
-	public void testAllAny() throws Exception
+	public void testAllAny() throws IterationException
 	{
 		Iterable<Integer> numbers = array(1, 2, 3, 4, 5, 6);
 		assertFalse(numbers.all(new Predicate1<Integer>()
@@ -143,24 +146,12 @@ public class TestIterable extends TestCase
 		}));
 	}
 	
-	public void testFirst() throws Exception
+	public void testFirst() throws IterationException
 	{
 		assertEquals(null, array().first());
 		assertEquals("plop", array("plop", "onk").first());
-		assertEquals("plop", array("plop", "onk").select(new Predicate1<String>()
-		{
-			public Boolean call(String t1) throws Exception
-			{
-				return true;
-			}
-		}).first());
-		assertEquals(null, array("plop", "onk").select(new Predicate1<String>()
-		{
-			public Boolean call(String t1) throws Exception
-			{
-				return false;
-			}
-		}).first());
+		assertEquals("plop", array("plop", "onk").select(new TruePredicate1<String>()).first());
+		assertEquals(null, array("plop", "onk").select(new FalsePredicate1<String>()).first());
 		assertEquals("Onk", array("Plop", "Onk", "plop", "onk").select(new Predicate1<String>()
 		{
 			public Boolean call(String str) throws Exception
@@ -170,35 +161,17 @@ public class TestIterable extends TestCase
 		}).first());
 	}
 	
-	public void testMap() throws Exception
+	public void testMap() throws IterationException, SecurityException, NoSuchMethodException
 	{
 		assertEquals(array("plop", "onk"), array("plop", "onk").map(new Identity<String>()));
-		assertEquals(array("PLOP", "ONK"), array("plop", "onk").map(new Function1<String, String>()
-		{
-			public String call(String str) throws Exception
-			{
-				return str.toUpperCase();
-			}
-		}));
+		assertEquals(array("PLOP", "ONK"), array("plop", "onk").map(new Method0<String, String>("toUpperCase")));
 		assertEquals(array("PLOP", "ONK"), array("plop", "onk").map(String.class.getMethod("toUpperCase")));
 	}
 	
-	public void testSelect() throws Exception
+	public void testSelect() throws IterationException
 	{
-		assertEquals(array("plop", "onk"), array("plop", "onk").select(new Predicate1<String>()
-		{
-			public Boolean call(String t1) throws Exception
-			{
-				return true;
-			}
-		}));
-		assertFalse(array("plop", "onk").select(new Predicate1<String>()
-		{
-			public Boolean call(String t1) throws Exception
-			{
-				return false;
-			}
-		}).iterator().hasNext());
+		assertEquals(array("plop", "onk"), array("plop", "onk").select(new TruePredicate1<String>()));
+		assertFalse(array("plop", "onk").select(new FalsePredicate1<String>()).iterator().hasNext());
 		assertEquals(array("Plop", "plop"), array("Plop", "Onk", "plop", "onk").select(new Predicate1<String>()
 		{
 			public Boolean call(String str) throws Exception

@@ -2,13 +2,14 @@ package fr.cantor.functional.test;
 
 import junit.framework.TestCase;
 import fr.cantor.functional.Iterable;
+import fr.cantor.functional.IterationException;
 import fr.cantor.functional.Range;
 import fr.cantor.functional.functions.Injecter;
 import fr.cantor.functional.functions.predicates.Predicate1;
 
 public class TestPrimeNumbers extends TestCase 
 {
-	public void testPrimeNumbers()
+	public void testPrimeNumbers() throws IterationException
 	{
 		Iterable<Integer> numbers = new Range(1, 100);
 		Iterable<Integer> primes = numbers.inject(numbers, new Injecter<Iterable<Integer>, Integer>()
