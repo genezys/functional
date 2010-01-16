@@ -1,6 +1,5 @@
 package fr.cantor.functional;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
@@ -195,6 +194,10 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 						{
 							return mapper.call(next);
 						}
+						catch ( RuntimeException e ) 
+						{
+							throw e;
+						}
 						catch ( Exception e )
 						{
 							throw new RuntimeException(e);
@@ -303,14 +306,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	{
 		return inject(false, new Injecter<Boolean, T>() 
 		{
-			public Boolean call(Boolean found, T value) throws Exception 
+			public Boolean call(Boolean others, T value) throws Exception 
 			{
-				if( found )
-				{
-					// End the looping here
-					throw new NoSuchElementException();
-				}
-				return found || predicate.call(value);
+				return others || predicate.call(value);
 			}
 		});
 	}
@@ -327,11 +325,6 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 		{
 			public Boolean call(Boolean others, T value) throws Exception 
 			{
-				if( !others )
-				{
-					// End the looping here
-					throw new NoSuchElementException();
-				}
 				return others && predicate.call(value);
 			}
 		});
@@ -345,19 +338,6 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	public Iterable<T> reject(final Predicate1<T> predicate)
 	{
 		return select(new NotPredicate1<T>(predicate));
-	}
-
-
-	public <V> Iterable<V> map(final Method method)
-	{
-		return map(new Function1<V, T>()
-		{
-			@SuppressWarnings("unchecked")
-			public V call(T t1) throws Exception 
-			{
-				return (V)method.invoke(t1);
-			}
-		});
 	}
 
 	/**

@@ -46,9 +46,29 @@ public class Range extends Iterable<Integer>
 			@Override
 			protected boolean moveNext() throws Exception
 			{
-				m_nIndex += 1;
-				return ( m_nIndex <= m_nEnd );
+				synchronized( m_nIndex )
+				{
+					m_nIndex += 1;
+					return ( m_nIndex <= m_nEnd );		
+				}
 			}
 		};
+	}
+	
+	public static void main (String [] args)
+	{
+		Iterator<Integer> range = new Range(10).iterator();
+		
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
+		System.out.println(range.next());
 	}
 }

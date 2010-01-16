@@ -22,6 +22,10 @@ public abstract class EasierIterator<T> extends Iterator<T>
 			advance();
 			return m_bHasNext;
 		}
+		catch ( RuntimeException e )
+		{
+			throw e;
+		} 
 		catch ( Exception e )
 		{
 			throw new RuntimeException(e);
@@ -40,6 +44,10 @@ public abstract class EasierIterator<T> extends Iterator<T>
 			}
 			return getCurrent();
 		}
+		catch ( RuntimeException e )
+		{
+			throw e;
+		} 
 		catch ( Exception e )
 		{
 			throw new RuntimeException(e);
