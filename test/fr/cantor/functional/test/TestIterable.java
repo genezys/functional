@@ -165,7 +165,6 @@ public class TestIterable extends TestCase
 	{
 		assertEquals(array("plop", "onk"), array("plop", "onk").map(new Identity<String>()));
 		assertEquals(array("PLOP", "ONK"), array("plop", "onk").map(new Method0<String, String>("toUpperCase")));
-		assertEquals(array("PLOP", "ONK"), array("plop", "onk").map(String.class.getMethod("toUpperCase")));
 	}
 	
 	public void testSelect() throws IterationException

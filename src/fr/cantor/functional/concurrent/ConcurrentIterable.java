@@ -1,10 +1,8 @@
 package fr.cantor.functional.concurrent;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -145,7 +143,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 			{
 				try
 				{
-					it.iterator().concurrently().dump(set1);
+					it.concurrently().dump(set1);
 				}
 				catch ( IterationException e )
 				{
