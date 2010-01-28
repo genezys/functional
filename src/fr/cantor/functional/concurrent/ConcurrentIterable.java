@@ -62,7 +62,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 						{
 							return;
 						} 
-						synchronized( value )
+						synchronized( result )
 						{
 							try
 							{
@@ -85,7 +85,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 		
 		try
 		{
-			executor.awaitTermination(1, TimeUnit.DAYS); // Infinite?
+			executor.awaitTermination(365, TimeUnit.DAYS); // Infinite ?
 		}
 		catch ( InterruptedException e )
 		{
@@ -100,7 +100,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 	{
 		// Iterated on all numbers from 0 to 999 and transform them to words 
 		// adding some free time to simulate a CPU yield action like a disk IO 
-		final Iterable<String> it = new Range(10000).map(new Function1<String, Integer>() 
+		final Iterable<String> it = new Range(100000).map(new Function1<String, Integer>() 
 		{
 			public String call(Integer n) throws Exception 
 			{

@@ -81,7 +81,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 			final Iterable<Object> it = (Iterable<Object>) obj;
 			try
 			{
-				return combine(it).inject(Boolean.valueOf(true), new Injecter<Boolean, Pair<T, Object>>()
+				return combine(it).inject(true, new Injecter<Boolean, Pair<T, Object>>()
 				{
 					public Boolean call(Boolean bOtherEquals, Pair<T, Object> pair) throws Exception 
 					{
