@@ -92,7 +92,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 			catch ( IterationException e )
 			{
 				// equals cannot throw :-(
-				throw new RuntimeException(e);
+				throw new IterationRuntimeException(e);
 			}
 		}
 		return false;
@@ -194,13 +194,13 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 						{
 							return mapper.call(next);
 						}
-						catch ( RuntimeException e ) 
+						catch ( IterationRuntimeException e ) 
 						{
 							throw e;
 						}
 						catch ( Exception e )
 						{
-							throw new RuntimeException(e);
+							throw new IterationRuntimeException(e);
 						}
 					}
 				};
@@ -414,25 +414,20 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 					}
 					public Pair<T, V> next()
 					{
-						T value1 = null;
-						try 
-						{
-							value1 = it1.hasNext() ? it1.next() : null;
-						} 
-						catch ( NoSuchElementException e ) 
-						{
-							// keep the null value
-						} 
-						V value2 = null;
-						try 
-						{
-							value2 = it2.hasNext() ? it2.next() : null;
-						} 
-						catch ( NoSuchElementException e ) 
-						{
-							// keep the null value
-						} 
+						T value1 = getNextValue(it1);
+						V value2 = getNextValue(it2);
 						return new Pair<T, V>(value1, value2);
+					}
+					private <S> S getNextValue(final Iterator<S> it)
+					{
+						try 
+						{
+							return it.hasNext() ? it.next() : null;
+						} 
+						catch ( NoSuchElementException e ) 
+						{
+							return null;
+						}
 					}
 				};
 			}
