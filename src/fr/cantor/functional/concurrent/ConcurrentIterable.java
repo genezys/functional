@@ -1,6 +1,7 @@
 package fr.cantor.functional.concurrent;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutorService;
@@ -47,7 +48,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 		ExecutorService executor = Executors.newFixedThreadPool(m_countThreads);
 		for ( int i = 0; i < m_countThreads; i += 1 ) 
 		{
-			executor.execute(new Iteration<V, T>(injecter, value, it));
+			executor.execute(new Iteration<V, T>(it, value, injecter));
 		}
 		executor.shutdown();
 		
@@ -65,13 +66,13 @@ public class ConcurrentIterable<T> extends Iterable<T>
 	private static class Iteration<V, T> implements Runnable
 	{
 		private Injecter<V, T> m_injecter;
-		private V m_result;
+		private V m_value;
 		private Iterator<T> m_iterator;
 	
-		private Iteration(Injecter<V, T> injecter, V result, Iterator<T> iterator)
+		private Iteration(Iterator<T> iterator, V value, Injecter<V, T> injecter)
 		{
 			m_injecter = injecter;
-			m_result = result;
+			m_value = value;
 			m_iterator = iterator;
 		}
 	
@@ -80,23 +81,26 @@ public class ConcurrentIterable<T> extends Iterable<T>
 			while( true )
 			{
 				T next;
-				if ( !m_iterator.hasNext() )
+				synchronized ( m_iterator )
 				{
-					return;
+					if ( !m_iterator.hasNext() )
+					{
+						return;
+					}
+					try
+					{
+						next = m_iterator.next();
+					}
+					catch ( NoSuchElementException e )
+					{
+						return;
+					}
 				}
-				try
-				{
-					next = m_iterator.next();
-				}
-				catch ( NoSuchElementException e )
-				{
-					return;
-				}
-				synchronized( m_result )
+				synchronized( m_value )
 				{
 					try
 					{
-						m_result = m_injecter.call(m_result, next);
+						m_value = m_injecter.call(m_value, next);
 					}
 					catch ( IterationRuntimeException e ) 
 					{
@@ -114,32 +118,34 @@ public class ConcurrentIterable<T> extends Iterable<T>
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String[] args) throws Exception 
 	{
+		int count = 1000000;
+		
 		// Iterated on all numbers from 0 to 999 and transform them to words 
 		// adding some free time to simulate a CPU yield action like a disk IO 
-		final Iterable<String> it = new Range(100000).map(new Function1<String, Integer>() 
+		final Iterable<String> it = new Range(count).map(new Function1<String, Integer>() 
 		{
 			public String call(Integer n) throws Exception 
 			{
 				return Integer.toString(n)
-//				.replaceAll("0", " Zero ")
-//				.replaceAll("1", " One ")
-//				.replaceAll("2", " Two ")
-//				.replaceAll("3", " Three ")
-//				.replaceAll("4", " Four ")
-//				.replaceAll("5", " Five ")
-//				.replaceAll("6", " Six ")
-//				.replaceAll("7", " Seven ")
-//				.replaceAll("8", " Eight ")
-//				.replaceAll("9", " Nine ")
+				.replaceAll("0", " Zero ")
+				.replaceAll("1", " One ")
+				.replaceAll("2", " Two ")
+				.replaceAll("3", " Three ")
+				.replaceAll("4", " Four ")
+				.replaceAll("5", " Five ")
+				.replaceAll("6", " Six ")
+				.replaceAll("7", " Seven ")
+				.replaceAll("8", " Eight ")
+				.replaceAll("9", " Nine ")
 				.trim()
 				;
 			}
 		});
 		
-		final List<String> list1 = new ArrayList<String>(100000);
-		final List<String> list2 = new ArrayList<String>(100000);
+		final List<String> list1 = new ArrayList<String>(count);
+		final List<String> list2 = new ArrayList<String>(count);
 				
-		System.out.println("single-threaded: " + profile(new Runnable()
+		long singleThreaded = profile(new Runnable()
 		{
 			public void run()
 			{
@@ -152,8 +158,8 @@ public class ConcurrentIterable<T> extends Iterable<T>
 					throw new IterationRuntimeException(e);
 				}
 			}
-		}));
-		System.out.println("multi-threaded:  " + profile(new Runnable()
+		});
+		long multiThreaded = profile(new Runnable()
 		{
 			public void run()
 			{
@@ -166,20 +172,13 @@ public class ConcurrentIterable<T> extends Iterable<T>
 					throw new IterationRuntimeException(e);
 				}
 			}
-		}));
+		});
+		System.out.println("single-threaded: " + singleThreaded);
+		System.out.println("multi-threaded:  " + multiThreaded + "(" + ((double)(multiThreaded - singleThreaded)/singleThreaded) + ")");
 		
-		for ( int i = 0; i < list1.size(); i++ )
-		{
-			String str1 = list1.get(i);
-			String str2 = list2.get(i);
-			if ( !str1.equals(str2) )
-			{
-				System.out.println(i);
-				System.out.println(str1);
-				System.out.println(str2);
-				break;
-			}
-		}
+		Collections.sort(list1);
+		Collections.sort(list2);
+		System.out.println(list1.equals(list2));
 	}
 	
 	private static long profile(Runnable r)

@@ -47,7 +47,7 @@ public class Range extends Iterable<Integer>
 			@Override
 			protected boolean moveNext() throws Exception
 			{
-				synchronized( this )
+				synchronized( m_nIndex )
 				{
 					m_nIndex += 1;
 					return (m_nIndex <= m_nEnd);
