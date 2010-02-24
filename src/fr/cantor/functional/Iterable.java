@@ -398,14 +398,14 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param it Iterable to combine
 	 * @return an Iterable containing pairs of this iterable with the other. 
 	 */
-	public <V> Iterable<Pair<T, V>> combine(final Iterable<V> it)
+	public <V> Iterable<Pair<T, V>> combine(final java.lang.Iterable<V> it)
 	{
 		return new Iterable<Pair<T,V>>()
 		{
 			public Iterator<Pair<T, V>> iterator()
 			{
 				final Iterator<T> it1 = Iterable.this.iterator();
-				final Iterator<V> it2 = it.iterator();
+				final Iterator<V> it2 = Iterable.wrap(it).iterator();
 				return new Iterator<Pair<T,V>>()
 				{
 					public boolean hasNext()

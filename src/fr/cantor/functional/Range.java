@@ -1,6 +1,7 @@
 package fr.cantor.functional;
 
 
+
 /**
  * An Iterable range of integers. 
  * Either from 0 for a specific number of integers, or from a value to another.
@@ -46,16 +47,16 @@ public class Range extends Iterable<Integer>
 			@Override
 			protected boolean moveNext() throws Exception
 			{
-				synchronized( m_nIndex )
+				synchronized( this )
 				{
 					m_nIndex += 1;
-					return ( m_nIndex <= m_nEnd );		
-				}
+					return (m_nIndex <= m_nEnd);
+				}		
 			}
 		};
 	}
 	
-	public static void main (String [] args)
+	public static void main (String [] args) throws IterationException
 	{
 		Iterator<Integer> range = new Range(10).iterator();
 		
