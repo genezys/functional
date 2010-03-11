@@ -431,4 +431,14 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	{
 		return new ConcurrentIterable<T>(this);
 	}
+	
+	/**
+	 * Wraps the current Iterable in a ConcurrentIterable
+	 * to dispatch iteration on multiple threads
+	 * @return
+	 */
+	public Iterable<T> concurrently(int countThreads)
+	{
+		return new ConcurrentIterable<T>(this, countThreads);
+	}
 }

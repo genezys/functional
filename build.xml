@@ -27,7 +27,6 @@
     <target name="cleanall" depends="clean"/>
 
     <target name="build" depends="init">
-        <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
             <classpath refid="functional.classpath"/>
@@ -37,6 +36,9 @@
 	<target name="package" depends="build">
 		<jar destfile="${ant.project.name}.jar">
 			<fileset dir="bin"/>
+			<manifest>
+				<attribute name="Main-Class" value="fr.cantor.functional.concurrent.ConcurrentIterable"/>
+			</manifest>
 		</jar>
 	</target>
 </project>

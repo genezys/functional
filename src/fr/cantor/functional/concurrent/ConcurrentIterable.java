@@ -120,7 +120,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 	{
 		// Iterated on all numbers from 0 to 999 and transform them to words 
 		// adding some free time to simulate a CPU yield action like a disk IO 
-		Range range = new Range(100000);
+		Range range = new Range(30000);
 		Iterable<Integer> integers = Iterable.wrap(range.dump(new ArrayList<Integer>()));
 		final Iterable<String> it = integers.map(new Function1<String, Integer>() 
 		{
@@ -145,7 +145,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 		final List<String> list1 = new ArrayList<String>(100000);
 		final List<String> list2 = new ArrayList<String>(100000);
 				
-		System.out.println("single-threaded: " + profile(new Runnable()
+		long timeSingleThreaded = profile(new Runnable()
 		{
 			public void run()
 			{
@@ -158,8 +158,10 @@ public class ConcurrentIterable<T> extends Iterable<T>
 					throw new FunctionalRuntimeException(e);
 				}
 			}
-		}));
-		System.out.println("multi-threaded:  " + profile(new Runnable()
+		});
+		System.out.println("single-threaded: " + timeSingleThreaded);
+
+		long timeMultiThreaded = profile(new Runnable()
 		{
 			public void run()
 			{
@@ -172,7 +174,10 @@ public class ConcurrentIterable<T> extends Iterable<T>
 					throw new FunctionalRuntimeException(e);
 				}
 			}
-		}));
+		});
+
+		double diff = (timeMultiThreaded - timeSingleThreaded) / (double)timeSingleThreaded;
+		System.out.println("multi-threaded:  " + timeMultiThreaded + " (" + String.format("%.3f", diff) +  ")");
 		
 		Collections.sort(list1);
 		Collections.sort(list2);
