@@ -1,5 +1,7 @@
 package fr.cantor.functional;
 
+import fr.cantor.functional.exceptions.FunctionalException;
+
 
 
 /**
@@ -39,37 +41,17 @@ public class Range extends Iterable<Integer>
 			private Integer m_nIndex = m_nBegin - 1;
 			
 			@Override
-			protected Integer getCurrent() throws Exception
+			protected Integer getCurrent() throws FunctionalException
 			{
 				return m_nIndex;
 			}
 			
 			@Override
-			protected boolean moveNext() throws Exception
+			protected boolean moveNext() throws FunctionalException
 			{
-				synchronized( this )
-				{
-					m_nIndex += 1;
-					return (m_nIndex <= m_nEnd);
-				}		
+				m_nIndex += 1;
+				return (m_nIndex <= m_nEnd);
 			}
-		};
-	}
-	
-	public static void main (String [] args) throws IterationException
-	{
-		Iterator<Integer> range = new Range(10).iterator();
-		
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
-		System.out.println(range.next());
+		}.synchronizedIterator();
 	}
 }

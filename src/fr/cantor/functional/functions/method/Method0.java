@@ -1,8 +1,8 @@
 package fr.cantor.functional.functions.method;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import fr.cantor.functional.exceptions.FunctionalException;
 import fr.cantor.functional.functions.Function1;
 
 public class Method0<R, T1> implements Function1<R, T1>
@@ -16,12 +16,23 @@ public class Method0<R, T1> implements Function1<R, T1>
 	}
 	
 	@SuppressWarnings("unchecked")
-	public R call(T1 t1) throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException 
+	public R call(T1 t1) throws FunctionalException 
 	{
-		if ( m_method == null )
+		try
 		{
-			m_method = t1.getClass().getMethod(m_name);
+			if ( m_method == null )
+			{
+				m_method = t1.getClass().getMethod(m_name);
+			}
+			return (R) m_method.invoke(t1);
 		}
-		return (R) m_method.invoke(t1);
+		catch ( RuntimeException e ) 
+		{
+			throw e;
+		}
+		catch ( Exception e )
+		{
+			throw new FunctionalException(e);
+		}
 	}
 }

@@ -2,6 +2,9 @@ package fr.cantor.functional;
 
 import java.util.NoSuchElementException;
 
+import fr.cantor.functional.exceptions.FunctionalException;
+import fr.cantor.functional.exceptions.FunctionalRuntimeException;
+
 /**
  * Abstract class to implement the Iterator interface
  * using a simpler contract than the default one:
@@ -11,9 +14,9 @@ import java.util.NoSuchElementException;
  */
 public abstract class EasierIterator<T> extends Iterator<T>
 {
-	protected abstract boolean moveNext() throws Exception;
+	protected abstract boolean moveNext() throws FunctionalException;
 	
-	protected abstract T getCurrent() throws Exception;
+	protected abstract T getCurrent() throws FunctionalException;
 	
 	public boolean hasNext()
 	{
@@ -22,13 +25,13 @@ public abstract class EasierIterator<T> extends Iterator<T>
 			advance();
 			return m_bHasNext;
 		}
-		catch ( IterationRuntimeException e )
+		catch ( FunctionalRuntimeException e )
 		{
 			throw e;
 		} 
 		catch ( Exception e )
 		{
-			throw new IterationRuntimeException(e);
+			throw new FunctionalRuntimeException(e);
 		}
 	}
 
@@ -44,20 +47,16 @@ public abstract class EasierIterator<T> extends Iterator<T>
 			}
 			return getCurrent();
 		}
-		catch ( IterationRuntimeException e )
+		catch ( FunctionalException e )
 		{
-			throw e;
-		} 
-		catch ( Exception e )
-		{
-			throw new IterationRuntimeException(e);
+			throw new FunctionalRuntimeException(e);
 		}
 	}
 
 	private boolean m_bShouldMoveToNext = true;
 	private boolean m_bHasNext = false;
 
-	private void advance() throws Exception
+	protected void advance() throws FunctionalException
 	{
 		if ( m_bShouldMoveToNext )
 		{

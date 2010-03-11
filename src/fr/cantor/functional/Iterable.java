@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 
 import fr.cantor.functional.concurrent.ConcurrentIterable;
+import fr.cantor.functional.exceptions.FunctionalException;
+import fr.cantor.functional.exceptions.FunctionalRuntimeException;
 import fr.cantor.functional.functions.Function1;
 import fr.cantor.functional.functions.Injecter;
 import fr.cantor.functional.functions.predicates.NotPredicate1;
@@ -35,7 +37,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 		{
 			public Iterator<T> iterator()
 			{
-				return Iterator.wrap(iterable.iterator());
+				return new SynchronizedIterator<T>(Iterator.wrap(iterable.iterator()));
 			}
 		};
 	}
@@ -83,16 +85,16 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 			{
 				return combine(it).inject(true, new Injecter<Boolean, Pair<T, Object>>()
 				{
-					public Boolean call(Boolean bOtherEquals, Pair<T, Object> pair) throws Exception 
+					public Boolean call(Boolean bOtherEquals, Pair<T, Object> pair) throws FunctionalException 
 					{
 						return bOtherEquals && ( ( pair.first == pair.second ) || pair.first.equals(pair.second) );
 					}
 				});
 			}
-			catch ( IterationException e )
+			catch ( FunctionalException e )
 			{
 				// equals cannot throw :-(
-				throw new IterationRuntimeException(e);
+				throw new FunctionalRuntimeException(e);
 			}
 		}
 		return false;
@@ -111,9 +113,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 *            Functor that will apply the injection on each element
 	 * @return the injected value modified by the injecter called for every
 	 *         elements
-	 * @throws IterationException 
+	 * @throws FunctionalException 
 	 */
-	public <V> V inject(V value, final Injecter<V, T> injecter) throws IterationException
+	public <V> V inject(V value, final Injecter<V, T> injecter) throws FunctionalException
 	{
 		return injectWithIterator(iterator(), value, injecter);
 	}
@@ -125,10 +127,10 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param injecter
 	 *            injecter object to use to compute each element injection
 	 * @return injected value modified by the injecter called for every elements
-	 * @throws IterationException 
+	 * @throws FunctionalException 
 	 * @see #inject(Object, Injecter)
 	 */
-	public T inject(final Injecter<T, T> injecter) throws IterationException
+	public T inject(final Injecter<T, T> injecter) throws FunctionalException
 	{
 		Iterator<T> it = iterator();
 		if ( !it.hasNext() )
@@ -145,24 +147,13 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param value initial value to inject
 	 * @param injecter closure to execute the injection
 	 * @return the injected value modified from all the injection
-	 * @throws IterationException 
+	 * @throws FunctionalException 
 	 */
-	protected <V> V injectWithIterator(Iterator<T> it, V value, final Injecter<V, T> injecter) throws IterationException
+	protected <V> V injectWithIterator(Iterator<T> it, V value, final Injecter<V, T> injecter) throws FunctionalException
 	{
 		while ( it.hasNext() )
 		{
-			try
-			{
-				value = injecter.call(value, it.next());
-			}
-			catch ( IterationException e ) 
-			{
-				throw e;
-			}
-			catch ( Exception e )
-			{
-				throw new IterationException(e);
-			}
+			value = injecter.call(value, it.next());
 		}
 		return value;
 	}
@@ -194,13 +185,10 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 						{
 							return mapper.call(next);
 						}
-						catch ( IterationRuntimeException e ) 
+						catch ( FunctionalException e )
 						{
-							throw e;
-						}
-						catch ( Exception e )
-						{
-							throw new IterationRuntimeException(e);
+							// Iterator#next cannot throw :-(
+							throw new FunctionalRuntimeException(e);
 						}
 					}
 				};
@@ -231,7 +219,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 					}
 
 					@Override
-					protected boolean moveNext() throws Exception
+					protected boolean moveNext() throws FunctionalException
 					{
 						while ( it.hasNext() )
 						{
@@ -251,9 +239,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 
 	/**
 	 * @return the first element of the iterator or null if it does not exists
-	 * @throws IterationException 
+	 * @throws FunctionalException 
 	 */
-	public T first() throws IterationException
+	public T first() throws FunctionalException
 	{
 		return inject(new Injecter<T, T>()
 		{
@@ -267,9 +255,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	/**
 	 * @params predicate Predicate describing the first element to search
 	 * @return the first element of the iterator or null if it does not exists
-	 * @throws IterationException 
+	 * @throws FunctionalException 
 	 */
-	public T first(Predicate1<T> predicate) throws IterationException
+	public T first(Predicate1<T> predicate) throws FunctionalException
 	{
 		return select(predicate).first();
 	}
@@ -281,11 +269,11 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 *            Functor that will process each element
 	 * @throws Exception
 	 */
-	public void each(final Procedure1<T> procedure) throws Exception
+	public void each(final Procedure1<T> procedure) throws FunctionalException
 	{
 		inject(null, new Injecter<Void, T>() 
 		{
-			public Void call(Void unused, T value) throws Exception 
+			public Void call(Void unused, T value) throws FunctionalException 
 			{
 				procedure.call(value);
 				return null;
@@ -300,13 +288,13 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param predicate
 	 *            Predicate to test each element
 	 * @return true if one element satisfies the predicate, false otherwise
-	 * @throws IterationException
+	 * @throws FunctionalException
 	 */
-	public boolean any(final Predicate1<T> predicate) throws IterationException
+	public boolean any(final Predicate1<T> predicate) throws FunctionalException
 	{
 		return inject(false, new Injecter<Boolean, T>() 
 		{
-			public Boolean call(Boolean others, T value) throws Exception 
+			public Boolean call(Boolean others, T value) throws FunctionalException 
 			{
 				return others || predicate.call(value);
 			}
@@ -317,13 +305,13 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param predicate
 	 *            Predicate to test each element
 	 * @return true if all elements satisfy the predicate, false otherwise
-	 * @throws IterationException
+	 * @throws FunctionalException
 	 */
-	public boolean all(final Predicate1<T> predicate) throws IterationException 
+	public boolean all(final Predicate1<T> predicate) throws FunctionalException 
 	{
 		return inject(true, new Injecter<Boolean, T>() 
 		{
-			public Boolean call(Boolean others, T value) throws Exception 
+			public Boolean call(Boolean others, T value) throws FunctionalException 
 			{
 				return others && predicate.call(value);
 			}
@@ -345,9 +333,9 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * 
 	 * @param collection the collection to append elements into
 	 * @return the collection filled with all elements from the iterator
-	 * @throws IterationException 
+	 * @throws FunctionalException 
 	 */
-	public <C extends Collection<T>> C dump(C collection) throws IterationException
+	public <C extends Collection<T>> C dump(C collection) throws FunctionalException
 	{
 		return inject(collection, new Injecter<C, T>()
 		{
@@ -366,15 +354,15 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @param separator
 	 *            text to use to separator elements
 	 * @return the concatenated string
-	 * @throws IterationException 
+	 * @throws FunctionalException 
 	 */
-	public String join(final String separator) throws IterationException
+	public String join(final String separator) throws FunctionalException
 	{
 		return inject(new StringBuilder(), new Injecter<StringBuilder, T>()
 		{
 			private boolean m_first = true;
 
-			public StringBuilder call(StringBuilder sb, T value) throws Exception 
+			public StringBuilder call(StringBuilder sb, T value) throws FunctionalException 
 			{
 				if ( m_first )
 				{

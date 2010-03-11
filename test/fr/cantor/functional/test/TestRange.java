@@ -2,8 +2,8 @@ package fr.cantor.functional.test;
 
 import java.util.Iterator;
 
-import fr.cantor.functional.Range;
 import junit.framework.TestCase;
+import fr.cantor.functional.Range;
 
 public class TestRange extends TestCase
 {

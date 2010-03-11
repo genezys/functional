@@ -1,6 +1,7 @@
 package fr.cantor.functional.concurrent;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutorService;
@@ -8,10 +9,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import fr.cantor.functional.Iterable;
-import fr.cantor.functional.IterationException;
-import fr.cantor.functional.IterationRuntimeException;
 import fr.cantor.functional.Iterator;
 import fr.cantor.functional.Range;
+import fr.cantor.functional.exceptions.FunctionalException;
+import fr.cantor.functional.exceptions.FunctionalRuntimeException;
 import fr.cantor.functional.functions.Function1;
 import fr.cantor.functional.functions.Injecter;
 
@@ -79,33 +80,28 @@ public class ConcurrentIterable<T> extends Iterable<T>
 		{
 			while( true )
 			{
-				T next;
-				if ( !m_iterator.hasNext() )
-				{
-					return;
-				}
 				try
 				{
-					next = m_iterator.next();
+					T next = m_iterator.next();
+					synchronized( m_result )
+					{
+						try
+						{
+							m_result = m_injecter.call(m_result, next);
+						}
+						catch ( FunctionalRuntimeException e ) 
+						{
+							throw e;
+						}
+						catch ( Exception e ) 
+						{
+							throw new FunctionalRuntimeException(e);
+						}
+					}
 				}
 				catch ( NoSuchElementException e )
 				{
-					return;
-				}
-				synchronized( m_result )
-				{
-					try
-					{
-						m_result = m_injecter.call(m_result, next);
-					}
-					catch ( IterationRuntimeException e ) 
-					{
-						throw e;
-					}
-					catch ( Exception e ) 
-					{
-						throw new IterationRuntimeException(e);
-					}
+					break;
 				}
 			}
 		}
@@ -114,23 +110,33 @@ public class ConcurrentIterable<T> extends Iterable<T>
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String[] args) throws Exception 
 	{
+		for( int i = 0; i < 10; ++i )
+		{
+			test();
+		}
+	}
+	
+	public static void test() throws FunctionalException
+	{
 		// Iterated on all numbers from 0 to 999 and transform them to words 
 		// adding some free time to simulate a CPU yield action like a disk IO 
-		final Iterable<String> it = new Range(100000).map(new Function1<String, Integer>() 
+		Range range = new Range(100000);
+		Iterable<Integer> integers = Iterable.wrap(range.dump(new ArrayList<Integer>()));
+		final Iterable<String> it = integers.map(new Function1<String, Integer>() 
 		{
-			public String call(Integer n) throws Exception 
+			public String call(Integer n) throws FunctionalException
 			{
-				return Integer.toString(n)
-//				.replaceAll("0", " Zero ")
-//				.replaceAll("1", " One ")
-//				.replaceAll("2", " Two ")
-//				.replaceAll("3", " Three ")
-//				.replaceAll("4", " Four ")
-//				.replaceAll("5", " Five ")
-//				.replaceAll("6", " Six ")
-//				.replaceAll("7", " Seven ")
-//				.replaceAll("8", " Eight ")
-//				.replaceAll("9", " Nine ")
+				return String.format("%09d", n)
+				.replaceAll("0", " Zero ")
+				.replaceAll("1", " One ")
+				.replaceAll("2", " Two ")
+				.replaceAll("3", " Three ")
+				.replaceAll("4", " Four ")
+				.replaceAll("5", " Five ")
+				.replaceAll("6", " Six ")
+				.replaceAll("7", " Seven ")
+				.replaceAll("8", " Eight ")
+				.replaceAll("9", " Nine ")
 				.trim()
 				;
 			}
@@ -147,9 +153,9 @@ public class ConcurrentIterable<T> extends Iterable<T>
 				{
 					it.dump(list1);
 				}
-				catch ( IterationException e )
+				catch ( FunctionalException e )
 				{
-					throw new IterationRuntimeException(e);
+					throw new FunctionalRuntimeException(e);
 				}
 			}
 		}));
@@ -161,23 +167,41 @@ public class ConcurrentIterable<T> extends Iterable<T>
 				{
 					it.concurrently().dump(list2);
 				}
-				catch ( IterationException e )
+				catch ( FunctionalException e )
 				{
-					throw new IterationRuntimeException(e);
+					throw new FunctionalRuntimeException(e);
 				}
 			}
 		}));
 		
-		for ( int i = 0; i < list1.size(); i++ )
+		Collections.sort(list1);
+		Collections.sort(list2);
+		
+		if ( list1.equals(list2) )
 		{
-			String str1 = list1.get(i);
-			String str2 = list2.get(i);
-			if ( !str1.equals(str2) )
+			return;
+		}
+		else
+		{
+			System.out.println("Searching for error");
+			for ( int i = 0; i < list1.size(); i++ )
 			{
-				System.out.println(i);
-				System.out.println(str1);
-				System.out.println(str2);
-				break;
+				String str1 = list1.get(i);
+				String str2 = list2.get(i);
+				if ( !str1.equals(str2) )
+				{
+					System.out.println(i);
+					System.out.print(list1.get(i - 1));
+					System.out.print("\t");
+					System.out.println(list2.get(i - 1));
+					System.out.print(str1);
+					System.out.print("\t");
+					System.out.println(str2);
+					System.out.print(list1.get(i + 1));
+					System.out.print("\t");
+					System.out.println(list2.get(i + 1));
+					throw new RuntimeException("Multi threaded iteration failed");
+				}
 			}
 		}
 	}

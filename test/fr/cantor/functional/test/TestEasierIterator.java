@@ -3,6 +3,7 @@ package fr.cantor.functional.test;
 import junit.framework.TestCase;
 import fr.cantor.functional.EasierIterator;
 import fr.cantor.functional.Iterator;
+import fr.cantor.functional.exceptions.FunctionalException;
 
 public class TestEasierIterator extends TestCase
 {
@@ -11,12 +12,12 @@ public class TestEasierIterator extends TestCase
 		Iterator<Integer> iterator = new EasierIterator<Integer>()
 		{
 			@Override
-			protected Integer getCurrent() throws Exception
+			protected Integer getCurrent() throws FunctionalException
 			{
 				return null;
 			}
 			@Override
-			protected boolean moveNext() throws Exception
+			protected boolean moveNext() throws FunctionalException
 			{
 				return false;
 			}
@@ -32,12 +33,12 @@ public class TestEasierIterator extends TestCase
 		Iterator<Integer> iterator = new EasierIterator<Integer>()
 		{
 			@Override
-			protected Integer getCurrent() throws Exception
+			protected Integer getCurrent() throws FunctionalException
 			{
 				return 1000 + m_count;
 			}
 			@Override
-			protected boolean moveNext() throws Exception
+			protected boolean moveNext() throws FunctionalException
 			{
 				m_count += 1;
 				return m_count < 3;

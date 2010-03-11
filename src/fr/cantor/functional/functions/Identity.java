@@ -1,5 +1,7 @@
 package fr.cantor.functional.functions;
 
+import fr.cantor.functional.exceptions.FunctionalException;
+
 /**
  * A function that directly returns its parameter without modification
  * 
@@ -8,7 +10,7 @@ package fr.cantor.functional.functions;
  */
 public class Identity<T> implements Function1<T, T>
 {
-	public T call(T t) throws Exception
+	public T call(T t) throws FunctionalException
 	{
 		return t;
 	};

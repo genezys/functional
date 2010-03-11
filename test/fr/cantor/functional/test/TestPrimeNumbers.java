@@ -2,19 +2,19 @@ package fr.cantor.functional.test;
 
 import junit.framework.TestCase;
 import fr.cantor.functional.Iterable;
-import fr.cantor.functional.IterationException;
 import fr.cantor.functional.Range;
+import fr.cantor.functional.exceptions.FunctionalException;
 import fr.cantor.functional.functions.Injecter;
 import fr.cantor.functional.functions.predicates.Predicate1;
 
 public class TestPrimeNumbers extends TestCase 
 {
-	public void testPrimeNumbers() throws IterationException
+	public void testPrimeNumbers() throws FunctionalException
 	{
 		Iterable<Integer> numbers = new Range(1, 100);
 		Iterable<Integer> primes = numbers.inject(numbers, new Injecter<Iterable<Integer>, Integer>()
 		{
-			public Iterable<Integer> call(Iterable<Integer> numbers, final Integer number) throws Exception
+			public Iterable<Integer> call(Iterable<Integer> numbers, final Integer number) throws FunctionalException
 			{
 				// We don't test for 1 which is implicit
 				if ( number <= 1 )
@@ -24,7 +24,7 @@ public class TestPrimeNumbers extends TestCase
 				// Only keep in numbers those that do not divide by number
 				return numbers.reject(new Predicate1<Integer>()
 				{
-					public Boolean call(Integer n) throws Exception
+					public Boolean call(Integer n) throws FunctionalException
 					{
 						return n > number && n % number == 0;
 					}

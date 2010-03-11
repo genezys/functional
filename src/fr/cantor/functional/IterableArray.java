@@ -1,5 +1,6 @@
 package fr.cantor.functional;
 
+import fr.cantor.functional.exceptions.FunctionalException;
 import fr.cantor.functional.functions.Function1;
 
 
@@ -11,7 +12,7 @@ public class IterableArray<T> extends Iterable<T>
 	{
 		m_values = new Range(values.length).map(new Function1<T, Integer>() 
 		{
-			public T call(Integer i) throws Exception 
+			public T call(Integer i) throws FunctionalException 
 			{
 				return values[i];
 			}

@@ -1,12 +1,12 @@
 package fr.cantor.functional;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import fr.cantor.functional.test.TestEasierIterator;
 import fr.cantor.functional.test.TestIdentity;
 import fr.cantor.functional.test.TestIterable;
 import fr.cantor.functional.test.TestPrimeNumbers;
 import fr.cantor.functional.test.TestRange;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 public class AllTests extends TestSuite 
 {
