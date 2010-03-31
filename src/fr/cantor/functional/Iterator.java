@@ -8,7 +8,18 @@ public abstract class Iterator<T> extends Iterable<T> implements java.util.Itera
 {
 	public static <T> Iterator<T> wrap(final java.util.Iterator<T> it)
 	{
-		return new SynchronizedIterator<T>(it);
+		return new Iterator<T>()
+		{
+			public boolean hasNext()
+			{
+				return it.hasNext();
+			}
+			
+			public T next()
+			{
+				return it.next();
+			}
+		};
 	}
 	
 	public static <T> Iterator<T> wrap(final Iterator<T> it)
