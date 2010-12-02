@@ -1,4 +1,4 @@
-package fr.cantor.functional.functions.method;
+package fr.cantor.functional.functions.methods;
 
 import java.lang.reflect.Method;
 

@@ -1,12 +1,15 @@
 package fr.cantor.functional.test;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+
 import fr.cantor.functional.EasierIterator;
 import fr.cantor.functional.Iterator;
 import fr.cantor.functional.exceptions.FunctionalException;
 
-public class TestEasierIterator extends TestCase
+public class TestEasierIterator
 {
+	@Test
 	public void testEmptyIterator()
 	{
 		Iterator<Integer> iterator = new EasierIterator<Integer>()
@@ -23,9 +26,9 @@ public class TestEasierIterator extends TestCase
 			}
 		};
 		
-		assertFalse(iterator.hasNext());
-		assertFalse(iterator.hasNext());
-		assertFalse(iterator.hasNext());
+		Assert.assertFalse(iterator.hasNext());
+		Assert.assertFalse(iterator.hasNext());
+		Assert.assertFalse(iterator.hasNext());
 	}
 	
 	public void testSimple()
@@ -46,15 +49,15 @@ public class TestEasierIterator extends TestCase
 			int m_count = 0;
 		};
 		
-		assertTrue(iterator.hasNext());
-		assertTrue(iterator.hasNext());
-		assertTrue(iterator.hasNext());
-		assertEquals(Integer.valueOf(1001), iterator.next());
-		assertTrue(iterator.hasNext());
-		assertTrue(iterator.hasNext());
-		assertTrue(iterator.hasNext());
-		assertEquals(Integer.valueOf(1002), iterator.next());
-		assertFalse(iterator.hasNext());
-		assertFalse(iterator.hasNext());
+		Assert.assertTrue(iterator.hasNext());
+		Assert.assertTrue(iterator.hasNext());
+		Assert.assertTrue(iterator.hasNext());
+		Assert.assertEquals(Integer.valueOf(1001), iterator.next());
+		Assert.assertTrue(iterator.hasNext());
+		Assert.assertTrue(iterator.hasNext());
+		Assert.assertTrue(iterator.hasNext());
+		Assert.assertEquals(Integer.valueOf(1002), iterator.next());
+		Assert.assertFalse(iterator.hasNext());
+		Assert.assertFalse(iterator.hasNext());
 	}
 }

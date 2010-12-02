@@ -14,7 +14,7 @@ import fr.cantor.functional.Range;
 import fr.cantor.functional.exceptions.FunctionalException;
 import fr.cantor.functional.exceptions.FunctionalRuntimeException;
 import fr.cantor.functional.functions.Function1;
-import fr.cantor.functional.functions.Injecter;
+import fr.cantor.functional.functions.Function2;
 
 public class ConcurrentIterable<T> extends Iterable<T>
 {
@@ -43,7 +43,7 @@ public class ConcurrentIterable<T> extends Iterable<T>
 	 * based on it: any(), all(), dump(), join(), etc.
 	 */
 	@Override
-	protected <V> V injectWithIterator(Iterator<T> it, V value, Injecter<V,T> injecter) 
+	protected <V> V injectWithIterator(Iterator<T> it, V value, Function2<V, V,T> injecter) 
 	{
 		ExecutorService executor = Executors.newFixedThreadPool(m_countThreads);
 		for ( int i = 0; i < m_countThreads; i += 1 ) 
@@ -65,11 +65,11 @@ public class ConcurrentIterable<T> extends Iterable<T>
 	
 	private static class Iteration<V, T> implements Runnable
 	{
-		private Injecter<V, T> m_injecter;
+		private Function2<V, V, T> m_injecter;
 		private V m_result;
 		private Iterator<T> m_iterator;
 	
-		private Iteration(Injecter<V, T> injecter, V result, Iterator<T> iterator)
+		private Iteration(Function2<V, V, T> injecter, V result, Iterator<T> iterator)
 		{
 			m_injecter = injecter;
 			m_result = result;
