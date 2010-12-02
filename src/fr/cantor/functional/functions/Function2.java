@@ -1,6 +1,3 @@
-/**
- * 
- */
 package fr.cantor.functional.functions;
 
 import fr.cantor.functional.exceptions.FunctionalException;

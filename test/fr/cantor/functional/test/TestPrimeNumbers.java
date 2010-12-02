@@ -1,18 +1,21 @@
 package fr.cantor.functional.test;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+
 import fr.cantor.functional.Iterable;
 import fr.cantor.functional.Range;
 import fr.cantor.functional.exceptions.FunctionalException;
-import fr.cantor.functional.functions.Injecter;
+import fr.cantor.functional.functions.Function2;
 import fr.cantor.functional.functions.predicates.Predicate1;
 
-public class TestPrimeNumbers extends TestCase 
+public class TestPrimeNumbers
 {
+	@Test
 	public void testPrimeNumbers() throws FunctionalException
 	{
 		Iterable<Integer> numbers = new Range(1, 100);
-		Iterable<Integer> primes = numbers.inject(numbers, new Injecter<Iterable<Integer>, Integer>()
+		Iterable<Integer> primes = numbers.inject(numbers, new Function2<Iterable<Integer>, Iterable<Integer>, Integer>()
 		{
 			public Iterable<Integer> call(Iterable<Integer> numbers, final Integer number) throws FunctionalException
 			{
@@ -32,6 +35,6 @@ public class TestPrimeNumbers extends TestCase
 			}
 		});
 		
-		assertEquals("1,2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97", primes.join(","));
+		Assert.assertEquals("1,2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97", primes.join(","));
 	}
 }

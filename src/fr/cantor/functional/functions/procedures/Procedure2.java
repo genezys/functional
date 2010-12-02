@@ -1,7 +1,7 @@
 /**
  * 
  */
-package fr.cantor.functional.functions.procedure;
+package fr.cantor.functional.functions.procedures;
 
 import fr.cantor.functional.functions.Function2;
 

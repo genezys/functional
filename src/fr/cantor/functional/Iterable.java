@@ -7,10 +7,10 @@ import fr.cantor.functional.concurrent.ConcurrentIterable;
 import fr.cantor.functional.exceptions.FunctionalException;
 import fr.cantor.functional.exceptions.FunctionalRuntimeException;
 import fr.cantor.functional.functions.Function1;
-import fr.cantor.functional.functions.Injecter;
+import fr.cantor.functional.functions.Function2;
 import fr.cantor.functional.functions.predicates.NotPredicate1;
 import fr.cantor.functional.functions.predicates.Predicate1;
-import fr.cantor.functional.functions.procedure.Procedure1;
+import fr.cantor.functional.functions.procedures.Procedure1;
 import fr.cantor.functional.nuple.Pair;
 
 /**
@@ -83,7 +83,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 			final Iterable<Object> it = (Iterable<Object>) obj;
 			try
 			{
-				return combine(it).inject(true, new Injecter<Boolean, Pair<T, Object>>()
+				return combine(it).inject(true, new Function2<Boolean, Boolean, Pair<T, Object>>()
 				{
 					public Boolean call(Boolean bOtherEquals, Pair<T, Object> pair) throws FunctionalException 
 					{
@@ -115,7 +115,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 *         elements
 	 * @throws FunctionalException 
 	 */
-	public <V> V inject(V value, final Injecter<V, T> injecter) throws FunctionalException
+	public <V> V inject(V value, final Function2<V, V, T> injecter) throws FunctionalException
 	{
 		return injectWithIterator(iterator(), value, injecter);
 	}
@@ -130,7 +130,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @throws FunctionalException 
 	 * @see #inject(Object, Injecter)
 	 */
-	public T inject(final Injecter<T, T> injecter) throws FunctionalException
+	public T inject(final Function2<T, T, T> injecter) throws FunctionalException
 	{
 		Iterator<T> it = iterator();
 		if ( !it.hasNext() )
@@ -149,7 +149,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 * @return the injected value modified from all the injection
 	 * @throws FunctionalException 
 	 */
-	protected <V> V injectWithIterator(Iterator<T> it, V value, final Injecter<V, T> injecter) throws FunctionalException
+	protected <V> V injectWithIterator(Iterator<T> it, V value, final Function2<V, V, T> injecter) throws FunctionalException
 	{
 		while ( it.hasNext() )
 		{
@@ -236,6 +236,18 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 			}
 		};
 	}
+	
+	public Iterable<Pair<Integer, T>> withIndex()
+	{
+		final int[] counter = new int[]{ 0 };
+		return map(new Function1<Pair<Integer, T>, T>()
+		{
+			public Pair<Integer, T> call(T value) throws FunctionalException
+			{
+				return new Pair<Integer, T>(counter[0]++, value);
+			}
+		});
+	}
 
 	/**
 	 * @return the first element of the iterator or null if it does not exists
@@ -243,7 +255,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 */
 	public T first() throws FunctionalException
 	{
-		return inject(new Injecter<T, T>()
+		return inject(new Function2<T, T, T>()
 		{
 			public T call(T first, T value)
 			{
@@ -271,7 +283,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 */
 	public void each(final Procedure1<T> procedure) throws FunctionalException
 	{
-		inject(null, new Injecter<Void, T>() 
+		inject(null, new Function2<Void, Void, T>() 
 		{
 			public Void call(Void unused, T value) throws FunctionalException 
 			{
@@ -292,7 +304,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 */
 	public boolean any(final Predicate1<T> predicate) throws FunctionalException
 	{
-		return inject(false, new Injecter<Boolean, T>() 
+		return inject(false, new Function2<Boolean, Boolean, T>() 
 		{
 			public Boolean call(Boolean others, T value) throws FunctionalException 
 			{
@@ -309,7 +321,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 */
 	public boolean all(final Predicate1<T> predicate) throws FunctionalException 
 	{
-		return inject(true, new Injecter<Boolean, T>() 
+		return inject(true, new Function2<Boolean, Boolean, T>() 
 		{
 			public Boolean call(Boolean others, T value) throws FunctionalException 
 			{
@@ -337,7 +349,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 */
 	public <C extends Collection<T>> C dump(C collection) throws FunctionalException
 	{
-		return inject(collection, new Injecter<C, T>()
+		return inject(collection, new Function2<C, C, T>()
 		{
 			public C call(C collection, T t)
 			{
@@ -358,7 +370,7 @@ public abstract class Iterable<T> implements java.lang.Iterable<T>
 	 */
 	public String join(final String separator) throws FunctionalException
 	{
-		return inject(new StringBuilder(), new Injecter<StringBuilder, T>()
+		return inject(new StringBuilder(), new Function2<StringBuilder, StringBuilder, T>()
 		{
 			private boolean m_first = true;
 

@@ -1,13 +1,16 @@
 package fr.cantor.functional.test;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+
 import fr.cantor.functional.functions.Identity;
 
-public class TestIdentity extends TestCase
+public class TestIdentity
 {
+	@Test
 	public void testIdentity() throws Exception
 	{
-		assertEquals(null, new Identity<Object>().call(null));
-		assertEquals(Integer.valueOf(3), new Identity<Integer>().call(3));
+		Assert.assertEquals(null, new Identity<Object>().call(null));
+		Assert.assertEquals(Integer.valueOf(3), new Identity<Integer>().call(3));
 	}
 }
