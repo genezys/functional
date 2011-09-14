@@ -1,0 +1,7 @@
+.DS_Store
+/.settings
+/.classpath
+/.project
+/bin
+/functional.jar
+/target
