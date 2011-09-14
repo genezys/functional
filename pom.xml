@@ -3,6 +3,12 @@
   <groupId>fr.cantor</groupId>
   <artifactId>Functional</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <modules>
-  </modules>
+  <dependencies>
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.8.1</version>
+		<scope>test</scope>
+	</dependency>
+  </dependencies>
 </project>
